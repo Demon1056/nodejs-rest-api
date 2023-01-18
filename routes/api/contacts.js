@@ -1,5 +1,6 @@
 
 const express = require('express')
+
 const { listContacts,
   getContactById,
   removeContact,
@@ -15,13 +16,15 @@ router.get('/', async (req, res, next) => {
 })
 
 router.get('/:contactId', async (req, res, next) => {
-  const { id } = req.params
-  contact = await getContactById(id)
-  res.json('ddff')
+  const { contactId } = req.params
+  contact = await getContactById(contactId)
+  res.status(200).json(contact)
 })
 
 router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
+  newContact = await addContact(req.body)
+  console.log(req.body);
+  res.status(201).json(newContact)
 })
 
 router.delete('/:contactId', async (req, res, next) => {
