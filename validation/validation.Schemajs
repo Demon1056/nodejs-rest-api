@@ -1,0 +1,18 @@
+const Joi = require('joi');
+
+const schemaPost = Joi.object({
+    name: Joi.string().min(3).alphanum().required(),
+    email: Joi.string().min(3).email().required(),
+    phone: Joi.string().min(7).max(10).pattern(/^[0-9]+$/).required(),
+})
+
+const schemaChange = Joi.object({
+    name: Joi.string().min(3).alphanum(),
+    email: Joi.string().min(3).email(),
+    phone: Joi.string().min(7).max(10).pattern(/^[0-9]+$/),
+})
+
+module.exports = {
+    schemaPost,
+    schemaChange
+}
