@@ -20,8 +20,8 @@ const listContacts = async () => {
 
 const getContactById = async (contactId) => {
   const contactList = await readFile();
-  const contact = contactList.filter(({ id }) => id == contactId);
-  return contact;
+  const contact = contactList.filter(({ id }) => id == contactId)
+  return contact[0] || null;
 };
 
 const removeContact = async (contactId) => {
