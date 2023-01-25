@@ -4,6 +4,7 @@ const {
     removeContact,
     addContact,
     updateContact,
+    chooseFavorite
 } = require("../models/contacts");
 
 const {
@@ -52,10 +53,18 @@ const changeContact = async (req, res, next) => {
     const contact = await updateContact(contactId, req.body);
     res.json(contact);
 }
+const updateStatusContact = async (req, res, next) => {
+    if (!req.body) { return res.status(400).json({ "message": "missing field favorite" }) }
+    const { contactId } = req.params;
+    const { favorite } = req.body
+    const contact = await chooseFavorite(contactId, favorite);
+    res.status(200).json(contact);
+}
 module.exports = {
     getContact,
     getContacts,
     postContact,
     deleteContact,
-    changeContact
+    changeContact,
+    updateStatusContact
 }
