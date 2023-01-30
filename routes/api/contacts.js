@@ -6,23 +6,37 @@ const {
   postContact,
   deleteContact,
   changeContact,
-  updateStatusContact
+  updateStatusContact,
 } = require("../../controlles/controllers");
+
+const { tryCatchWrapper } = require("../../helpers/helpers");
 
 const {
   schemaPost,
-  schemaChange
-} = require('../../validation/validation.Schemajs')
+  schemaChange,
+} = require("../../validation/validation.Schemajs");
 
-const { validatePost, validatePut, validatePatch, } = require('../../middleware/contacts_middleware')
+const {
+  validatePost,
+  validatePut,
+  validatePatch,
+} = require("../../middleware/contacts_middleware");
 
 const router = express.Router();
 
-router.get("/", getContacts);
-router.get("/:contactId", getContact);
-router.post("/", validatePost(schemaPost), postContact);
-router.delete("/:contactId", deleteContact);
-router.put("/:contactId", validatePut(schemaChange), changeContact);
-router.patch("/:contactId/favorite", validatePatch(schemaChange), updateStatusContact);
+router.get("/", tryCatchWrapper(getContacts));
+router.get("/:contactId", tryCatchWrapper(getContact));
+router.post("/", validatePost(schemaPost), tryCatchWrapper(postContact));
+router.delete("/:contactId", tryCatchWrapper(deleteContact));
+router.put(
+  "/:contactId",
+  validatePut(schemaChange),
+  tryCatchWrapper(changeContact)
+);
+router.patch(
+  "/:contactId/favorite",
+  validatePatch(schemaChange),
+  tryCatchWrapper(updateStatusContact)
+);
 
 module.exports = router;
