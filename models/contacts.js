@@ -1,60 +1,35 @@
-const fs = require("fs").promises;
-const shortid = require("shortid");
-const path = require("path");
-const contactsPath = path.resolve(__dirname, "./contacts.json");
-
-const readFile = async () => {
-  const contacts = await fs.readFile(contactsPath, "utf-8");
-  const contactList = JSON.parse(contacts);
-  return contactList;
-};
-
-const writeFile = async (contacts) => {
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-};
+const { Contacts } = require("./contactServer")
 
 const listContacts = async () => {
-  const contacts = await readFile();
-  return contacts;
+  const contacts = await Contacts.find();
+  return contacts
 };
 
 const getContactById = async (contactId) => {
-  const contactList = await readFile();
-  const contact = contactList.filter(({ id }) => id == contactId)
-  return contact[0] || null;
+  const contact = Contacts.findById(contactId)
+  return contact || null;
 };
 
 const removeContact = async (contactId) => {
-  const contactList = await readFile();
-  const updateContacts = contactList.filter(({ id }) => id !== contactId);
-  writeFile(updateContacts);
+  await Contacts.findByIdAndRemove(contactId);
 };
 
-const addContact = async ({ name, email, phone }) => {
-  id = shortid.generate();
-  const newContact = {
+const addContact = async ({ name, email, phone, favorite }) => {
+  const newContact = await Contacts.create({
     name,
     email,
     phone,
-    id,
-  };
-  const contactList = await readFile();
-  contactList.push(newContact);
-  writeFile(contactList);
+    favorite,
+  });
   return newContact;
 };
 
-const updateContact = async (contactId, { name, phone, email }) => {
-  const contactList = await readFile();
-  contactList.forEach((contact) => {
-    if (contact.id === contactId) {
-      contact.name = name ? name : contact.name;
-      contact.email = email ? email : contact.email;
-      contact.phone = phone ? phone : contact.phone;
-    }
-  });
-  writeFile(contactList);
-  const contact = contactList.filter(({ id }) => id == contactId);
+const updateContact = async (contactId, { name, phone, email, favorite }) => {
+  const contact = await Contacts.findByIdAndUpdate(contactId, { name, phone, email, favorite }, { new: true })
+  return contact;
+};
+const chooseFavorite = async (contactId, favorite) => {
+  const contact = await Contacts.findByIdAndUpdate(contactId, { favorite }, { new: true })
   return contact;
 };
 
@@ -64,4 +39,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  chooseFavorite
 };
