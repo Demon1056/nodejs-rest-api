@@ -14,7 +14,11 @@ const schemaChange = Joi.object({
     favorite: Joi.boolean()
 })
 
+const schemaStatus = Joi.object({
+    favorite: Joi.boolean().required()
+})
 module.exports = {
     schemaPost,
-    schemaChange
+    schemaChange,
+    schemaStatus
 }

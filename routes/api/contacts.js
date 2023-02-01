@@ -14,28 +14,27 @@ const { tryCatchWrapper } = require("../../helpers/helpers");
 const {
   schemaPost,
   schemaChange,
-} = require("../../validation/validation.Schemajs");
+  schemaStatus
+} = require("../../validation/validation.Schema.js");
 
 const {
-  validatePost,
-  validatePut,
-  validatePatch,
+  validate
 } = require("../../middleware/contacts_middleware");
 
 const router = express.Router();
 
 router.get("/", tryCatchWrapper(getContacts));
 router.get("/:contactId", tryCatchWrapper(getContact));
-router.post("/", validatePost(schemaPost), tryCatchWrapper(postContact));
+router.post("/", validate(schemaPost), tryCatchWrapper(postContact));
 router.delete("/:contactId", tryCatchWrapper(deleteContact));
 router.put(
   "/:contactId",
-  validatePut(schemaChange),
+  validate(schemaChange),
   tryCatchWrapper(changeContact)
 );
 router.patch(
   "/:contactId/favorite",
-  validatePatch(schemaChange),
+  validate(schemaStatus),
   tryCatchWrapper(updateStatusContact)
 );
 

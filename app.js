@@ -1,7 +1,6 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
-const { validateBody } = require("./middleware/contacts_middleware");
 
 const contactsRouter = require("./routes/api/contacts");
 const app = express();
