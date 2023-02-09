@@ -1,4 +1,4 @@
-function tryCatchWrapper(enpointFn) {
+const tryCatchWrapper = (enpointFn) => {
   return async (req, res, next) => {
     try {
       await enpointFn(req, res, next);
@@ -6,13 +6,13 @@ function tryCatchWrapper(enpointFn) {
       return next(error);
     }
   };
-}
+};
 
-function throwError(status, message) {
+const throwError = (status, message) => {
   const err = new Error(message);
   err.status = status;
   return err;
-}
+};
 
 module.exports = {
   tryCatchWrapper,

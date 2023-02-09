@@ -1,3 +1,4 @@
+const { throwError } = require("../helpers/helpers");
 const {
   listContacts,
   getContactById,
@@ -5,12 +6,11 @@ const {
   addContact,
   updateContact,
   chooseFavorite,
-} = require("../models/contacts");
-
-const { throwError } = require("../helpers/helpers");
+} = require("../helpers/contacts.functions");
 
 const getContacts = async (req, res) => {
-  const contactList = await listContacts();
+  const { user } = req;
+  const contactList = await listContacts(user);
   return res.status(200).json(contactList);
 };
 
@@ -24,8 +24,9 @@ const getContact = async (req, res, next) => {
 };
 
 const postContact = async (req, res) => {
-  newContact = await addContact(req.body);
-  return res.status(201).json(newContact);
+  newContact = await addContact(req);
+  const { name, phone, email, owner } = newContact;
+  return res.status(201).json({ name, phone, email, owner: owner._id });
 };
 
 const deleteContact = async (req, res, next) => {
@@ -53,6 +54,7 @@ const updateStatusContact = async (req, res, next) => {
   }
   return res.status(200).json(contact);
 };
+
 module.exports = {
   getContact,
   getContacts,
