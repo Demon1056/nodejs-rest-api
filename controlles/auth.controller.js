@@ -3,6 +3,10 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const { throwError } = require("../helpers/helpers");
 const { Users } = require("../models/users.model");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
+const Jimp = require("jimp");
 
 dotenv.config();
 
@@ -12,9 +16,11 @@ const register = async (req, res, next) => {
   const { email, password } = req.body;
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
+  const avatarURL = gravatar.url(email);
   try {
     const savedUser = await Users.create({
       email,
+      avatarURL,
       password: hashedPassword,
     });
     return res.status(201).json({
@@ -62,14 +68,10 @@ const login = async (req, res, next) => {
 const logout = async (req, res, next) => {
   const { user } = req;
   try {
-    const userLogout = await Users.findByIdAndUpdate(
-      user._id,
-      { token: "" },
-      { new: true }
-    );
+    await Users.findByIdAndUpdate(user._id, { token: "" });
     return res.status(204).json({ message: "success logout" });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -79,9 +81,32 @@ const findCurrentUser = async (req, res, next) => {
   return res.status(200).json({ email, subscription });
 };
 
+const uploadAvatar = async (req, res, next) => {
+  const { user } = req;
+  const { filename } = req.file;
+  const tmpPath = path.resolve(__dirname, "../tmp", filename);
+  const avatar = await Jimp.read(tmpPath);
+  await avatar.resize(250, 250);
+  await avatar.writeAsync(tmpPath);
+  const publicPath = path.resolve(__dirname, "../public/avatars", filename);
+  try {
+    await fs.rename(tmpPath, publicPath);
+  } catch (error) {
+    await fs.unlink(tmpPath);
+    return next(error);
+  }
+  try {
+    await Users.findByIdAndUpdate(user._id, { avatarURL: publicPath });
+  } catch (error) {
+    return next(error);
+  }
+  return res.status(200).json({ avatarURL: publicPath });
+};
+
 module.exports = {
   register,
   login,
   logout,
   findCurrentUser,
+  uploadAvatar,
 };

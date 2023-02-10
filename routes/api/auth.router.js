@@ -1,11 +1,12 @@
 const express = require("express");
 
-const { authorization } = require("../../middleware/middlewares");
+const { authorization, upload } = require("../../middleware/middlewares");
 const {
   register,
   login,
   logout,
   findCurrentUser,
+  uploadAvatar,
 } = require("../../controlles/auth.controller");
 const { tryCatchWrapper } = require("../../helpers/helpers");
 const { validate } = require("../../middleware/middlewares");
@@ -24,6 +25,12 @@ authRouter.get(
   "/current",
   tryCatchWrapper(authorization),
   tryCatchWrapper(findCurrentUser)
+);
+authRouter.patch(
+  "/avatars",
+  tryCatchWrapper(authorization),
+  upload.single("avatarURL"),
+  tryCatchWrapper(uploadAvatar)
 );
 
 module.exports = { authRouter };
