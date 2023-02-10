@@ -2,6 +2,8 @@ const { throwError } = require("../helpers/helpers.js");
 const { Users } = require("../models/users.model.js");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const multer = require("multer");
+const path = require("path");
 
 dotenv.config();
 const { JWT_SECRET } = process.env;
@@ -33,7 +35,21 @@ const authorization = async (req, res, next) => {
   next();
 };
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.resolve(__dirname, "../tmp"));
+  },
+  filename: function (req, file, cb) {
+    cb(null, Math.random() + file.originalname);
+  },
+});
+
+const upload = multer({
+  storage,
+});
+
 module.exports = {
   validate,
   authorization,
+  upload,
 };

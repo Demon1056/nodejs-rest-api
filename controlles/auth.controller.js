@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const { throwError } = require("../helpers/helpers");
 const { Users } = require("../models/users.model");
+const gravatar = require("gravatar");
 
 dotenv.config();
 
@@ -12,9 +13,11 @@ const register = async (req, res, next) => {
   const { email, password } = req.body;
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
+  const avatarURL = gravatar.url(email);
   try {
     const savedUser = await Users.create({
       email,
+      avatarURL,
       password: hashedPassword,
     });
     return res.status(201).json({
@@ -79,9 +82,14 @@ const findCurrentUser = async (req, res, next) => {
   return res.status(200).json({ email, subscription });
 };
 
+const uploadAvatar = async (req, res, next) => {
+  console.log(req.file);
+  return res.json({ message: "added new avatar" });
+};
 module.exports = {
   register,
   login,
   logout,
   findCurrentUser,
+  uploadAvatar,
 };
