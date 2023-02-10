@@ -1,11 +1,12 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const { throwError } = require("../helpers/helpers.js");
 const { Users } = require("../models/users.model.js");
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs/promises");
 
-dotenv.config();
 const { JWT_SECRET } = process.env;
 
 const validate = (schema) => {
