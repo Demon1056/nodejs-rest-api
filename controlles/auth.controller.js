@@ -1,14 +1,13 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const dotenv = require("dotenv");
-const { throwError } = require("../helpers/helpers");
+const { throwError, sendMessage } = require("../helpers/helpers");
 const { Users } = require("../models/users.model");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
-
-dotenv.config();
+const { v4 } = require("uuid");
 
 const { JWT_SECRET } = process.env;
 
@@ -18,11 +17,19 @@ const register = async (req, res, next) => {
   const hashedPassword = await bcrypt.hash(password, salt);
   const avatarURL = gravatar.url(email);
   try {
-    const savedUser = await Users.create({
+    const verificationToken = v4();
+    await Users.create({
       email,
       avatarURL,
       password: hashedPassword,
+      verificationToken,
     });
+    await sendMessage({
+      to: email,
+      subject: "Please confirm your email",
+      html: `<a href="http://localhost:3000/api/users/verify/${verificationToken}">If you registered your mail on the contact site, click here</a>`,
+    });
+
     return res.status(201).json({
       user: {
         email,
@@ -44,6 +51,11 @@ const login = async (req, res, next) => {
   });
   if (!User) {
     return next(throwError(401, "Email or password is wrong"));
+  }
+  if (!User.verify) {
+    return next(
+      throwError(401, "Please check your mail box, and verify your email")
+    );
   }
   const isPasswordValid = await bcrypt.compare(password, User.password);
   if (!isPasswordValid) {
@@ -103,10 +115,61 @@ const uploadAvatar = async (req, res, next) => {
   return res.status(200).json({ avatarURL: publicPath });
 };
 
+const verify = async (req, res, next) => {
+  const { verificationToken } = req.params;
+  const user = await Users.findOne({
+    verificationToken: verificationToken,
+  });
+
+  if (!user) {
+    return next(throwError(404, "User not found"));
+  }
+
+  await Users.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+
+  return res.status(200).json({ message: "Verification successful" });
+};
+
+const handleVerify = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await Users.findOne({
+    email: email,
+  });
+  if (!user) {
+    return res
+      .status(400)
+      .json({
+        message:
+          "We didn't find your email in data base, please register first",
+      });
+  }
+  if (user.verify) {
+    return res.status(400).json({
+      message: "Verification has already been passed",
+    });
+  }
+  try {
+    const verificationToken = v4();
+    await sendMessage({
+      to: email,
+      subject: "Please confirm your email",
+      html: `<a href="http://localhost:3000/api/users/verify/${verificationToken}">If you registered your mail on the contact site, click here</a>`,
+    });
+  } catch (error) {
+    return next(error);
+  }
+  return res.status(200).json({ message: "Verification email sent" });
+};
+
 module.exports = {
   register,
   login,
   logout,
   findCurrentUser,
   uploadAvatar,
+  verify,
+  handleVerify,
 };

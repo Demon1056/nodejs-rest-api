@@ -29,9 +29,14 @@ const schemaAuth = Joi.object({
   email: Joi.string().min(5).email(),
   password: Joi.string().min(6).max(8).alphanum(),
 });
+
+const schemaVerify = Joi.object({
+  email: Joi.string().min(3).email().required(),
+});
 module.exports = {
   schemaPost,
   schemaChange,
   schemaStatus,
   schemaAuth,
+  schemaVerify,
 };
